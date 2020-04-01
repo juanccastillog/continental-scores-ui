@@ -1,4 +1,5 @@
 import React from 'react';
+import constants from './constants'
 
 const AddNameForm = ({ label, onAddName }) => {
 
@@ -32,7 +33,6 @@ const getPlayersAndDeals = (scoresP) => {
 const Table = ({ scores, onChangeScore }) => {
   const [players, deals] = getPlayersAndDeals(scores);
   const nameHeader = 'Name'
-  const dealsHeaders = ['2t', '1t 1st', '2st', '3t', '2t 1st', '2st 1t', '3s', 'sum', '$'];
   const playersColumn =
     <div className="playerscolumn">
       <div className="nameheader">{nameHeader}</div>
@@ -46,18 +46,18 @@ const Table = ({ scores, onChangeScore }) => {
   const dealsColumns =
     <div className="dealscontainer">
       {
-        dealsHeaders.map(
+        constants.dealsHeaders.map(
           (dealHeader, j) =>
             <div key={dealHeader} className="dealcolumn">
               <div className="dealheader">{dealHeader}</div>
               {
                 deals && deals[j] &&
-                  deals[j].map(
-                    (playerDeal) =>
-                      <li className="points" key={playerDeal.name}>
-                        <input type="text" pattern="[0-9]*" value={playerDeal.points} onChange={e => onChangeScore(j, playerDeal.name, e.target.value)}/>
-                      </li>
-                    )
+                deals[j].map(
+                  (playerDeal) =>
+                    <li className="points" key={playerDeal.name}>
+                      <input type="text" pattern="[0-9]*" value={playerDeal.points} onChange={e => onChangeScore(j, playerDeal.name, e.target.value)} />
+                    </li>
+                )
               }
             </div>
         )
@@ -71,29 +71,51 @@ const Table = ({ scores, onChangeScore }) => {
   )
 }
 
+const calculateWinnerByDeal = (scores, dealIndex) => {
+  let dealCompleted = true;
+  let dealMin = scores[0].deals[dealIndex];
+  let dealWinner = scores[0].name;
+  scores.forEach(playerScore => {
+    if (dealCompleted) {
+      if (playerScore.deals[dealIndex] === '') {
+        dealCompleted = false;
+      }
+      else {
+        dealMin = (playerScore.deals[dealIndex] < dealMin) ? playerScore.deals[dealIndex] : dealMin;
+        dealWinner = playerScore.name;
+      }
+    }
+  });
+  return dealCompleted? dealWinner : null;
+}
+
+const calculateEarning = scores => {
+  const deals = constants.dealsHeaders.map((dealHeader, j) => ({ dealHeader, winner: calculateWinnerByDeal(scores, j) }));
+}
+
 const App = () => {
   const [scores, setScores] = React.useState([]);
   const onAddName = (name) => {
-    setScores(scores.concat({ name, deals: ['','','','','','',''], sum: 0, income:0 }));
+    setScores(scores.concat({ name, deals: ['', '', '', '', '', '', ''], sum: 0, earning: 0 }));
   }
   const handleChangeScore = (dealIndex, name, value) => {
     setScores(
       scores.map(
-        score => 
-          score.name === name ? 
-          { 
-            ...score, 
-            deals: score.deals.map(
-              (deal, j) => (j===dealIndex)? value : deal 
-            )
-          } : score
+        score =>
+          score.name === name ?
+            {
+              ...score,
+              deals: score.deals.map(
+                (deal, j) => (j === dealIndex) ? value : deal
+              )
+            } : score
       )
     );
   };
   return (
     <React.Fragment>
       <AddNameForm label="Name" onAddName={onAddName} />
-      <Table scores={scores} onChangeScore={handleChangeScore}/>
+      <Table scores={scores} onChangeScore={handleChangeScore} />
     </React.Fragment>
   );
 }
