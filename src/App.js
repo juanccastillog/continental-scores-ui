@@ -43,7 +43,6 @@ const Table = ({ scores, onChangeScore }) => {
         )
       }
     </div>
-
   const dealsColumns =
     <div className="dealscontainer">
       {
@@ -53,12 +52,12 @@ const Table = ({ scores, onChangeScore }) => {
               <div className="dealheader">{dealHeader}</div>
               {
                 deals && deals[j] &&
-                deals[j].map(
-                  (playerDeal) =>
-                    <li className="points" key={playerDeal.name}>
-                      <input type="text" pattern="[0-9]*" value={playerDeal.points} />
-                    </li>
-                )
+                  deals[j].map(
+                    (playerDeal) =>
+                      <li className="points" key={playerDeal.name}>
+                        <input type="text" pattern="[0-9]*" value={playerDeal.points} onChange={e => onChangeScore(j, playerDeal.name, e.target.value)}/>
+                      </li>
+                    )
               }
             </div>
         )
@@ -75,12 +74,26 @@ const Table = ({ scores, onChangeScore }) => {
 const App = () => {
   const [scores, setScores] = React.useState([]);
   const onAddName = (name) => {
-    setScores(scores.concat({ name, deals: ['', '', '', '', '', '', ''] }));
+    setScores(scores.concat({ name, deals: ['','','','','','',''], sum: 0, income:0 }));
   }
+  const handleChangeScore = (dealIndex, name, value) => {
+    setScores(
+      scores.map(
+        score => 
+          score.name === name ? 
+          { 
+            ...score, 
+            deals: score.deals.map(
+              (deal, j) => (j===dealIndex)? value : deal 
+            )
+          } : score
+      )
+    );
+  };
   return (
     <React.Fragment>
       <AddNameForm label="Name" onAddName={onAddName} />
-      <Table scores={scores} />
+      <Table scores={scores} onChangeScore={handleChangeScore}/>
     </React.Fragment>
   );
 }
