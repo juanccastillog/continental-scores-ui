@@ -51,12 +51,26 @@ const Table = ({ scores, onChangeScore }) => {
             <div key={dealHeader} className="dealcolumn">
               <div className="dealheader">{dealHeader}</div>
               {
-                deals && deals[j] &&
-                deals[j].map(
-                  (playerDeal) =>
-                    <li className="points" key={playerDeal.name}>
-                      <input type="text" pattern="[0-9]*" value={playerDeal.points} onChange={e => onChangeScore(j, playerDeal.name, e.target.value)} />
-                    </li>
+                (deals && deals[j] &&
+                  deals[j].map(
+                    (playerDeal) =>
+                      <li className="points" key={playerDeal.name}>
+                        <input type="text" pattern="[0-9]*" value={playerDeal.points} onChange={e => onChangeScore(j, playerDeal.name, e.target.value)} />
+                      </li>
+                  )) ||
+                (
+                  dealHeader === 'sum' ?
+                    scores.map( playerScore => 
+                      <li className="points" key={playerScore.name}>
+                        {playerScore.sum}                        
+                      </li>
+                    ) :
+                  dealHeader === '$' ?
+                    scores.map( playerScore =>
+                      <li className="points" key={playerScore.name}>
+                        {playerScore.earning}
+                      </li>
+                    ) : null
                 )
               }
             </div>
@@ -86,11 +100,27 @@ const calculateWinnerByDeal = (scores, dealIndex) => {
       }
     }
   });
-  return dealCompleted? dealWinner : null;
+  return dealCompleted ? dealWinner : null;
 }
 
 const calculateEarning = scores => {
-  const deals = constants.dealsHeaders.map((dealHeader, j) => ({ dealHeader, winner: calculateWinnerByDeal(scores, j) }));
+  const winners = constants.dealsHeaders.map((...mapParameters) => calculateWinnerByDeal(scores, mapParameters[1]));
+  scores.map(
+    playerScore => (
+      {
+        ...playerScore,
+        sum: playerScore.deals.reduce(
+          ((acc, currentValue, index) =>
+            winners[index] ? acc + currentValue : acc),
+          0
+        ),
+        earning: playerScore.deals.reduce(
+          ((acc, s, index) =>
+            winners[index] === playerScore.name ? acc + constants.dealsEarnings[index] * scores.length : acc - constants.dealsEarnings[index]),
+          0
+        ),
+      })
+  );
 }
 
 const App = () => {
@@ -100,7 +130,7 @@ const App = () => {
   }
   const handleChangeScore = (dealIndex, name, value) => {
     setScores(
-      scores.map(
+      calculateEarning(scores.map(
         score =>
           score.name === name ?
             {
@@ -110,7 +140,7 @@ const App = () => {
               )
             } : score
       )
-    );
+      ));
   };
   return (
     <React.Fragment>
