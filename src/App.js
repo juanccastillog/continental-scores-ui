@@ -1,90 +1,8 @@
 import React from 'react';
-import constants from './constants'
-
-const AddNameForm = ({ label, onAddName }) => {
-
-  const [name, setName] = React.useState('');
-  const handleSubmit = (event) => {
-    onAddName(name);
-    setName('');
-    event.preventDefault();
-  }
-  const handleChange = (event) => {
-    setName(event.target.value);
-  }
-  return (
-    <form onSubmit={handleSubmit}>
-      <label>
-        {label}
-        <input type="text" onChange={handleChange} value={name} />
-      </label>
-    </form>
-  );
-}
-
-const getPlayersAndDeals = (scoresP) => {
-  const deals = scoresP[0] && scoresP[0].deals && scoresP[0].deals.map(
-    (row0colj, j) => scoresP.map(row => ({ name: row.name, points: row.deals[j] }))
-  );
-  const players = scoresP.map(score => score.name);
-  return [players, deals];
-}
-
-
-const Table = ({ scores, onChangeScore }) => {
-  const [players, deals] = getPlayersAndDeals(scores);
-  const nameHeader = 'Name'
-  const playersColumn =
-    <div className="playerscolumn">
-      <div className="nameheader">{nameHeader}</div>
-      {
-        players.map(
-          player =>
-            <div className="playername" key={player}>{player}</div>
-        )
-      }
-    </div>
-  const dealsColumns =
-    <div className="dealscontainer">
-      {
-        constants.dealsHeaders.map(
-          (dealHeader, j) =>
-            <div key={dealHeader} className="dealcolumn">
-              <div className="dealheader">{dealHeader}</div>
-              {
-                (deals && deals[j] &&
-                  deals[j].map(
-                    (playerDeal) =>
-                      <li className="points" key={playerDeal.name}>
-                        <input type="number" value={playerDeal.points} onChange={e => onChangeScore(j, playerDeal.name, e.target.value)} />
-                      </li>
-                  )) ||
-                (
-                  dealHeader === 'sum' ?
-                    scores.map( playerScore => 
-                      <li className="points" key={playerScore.name}>
-                        {playerScore.sum}                        
-                      </li>
-                    ) :
-                  dealHeader === '$' ?
-                    scores.map( playerScore =>
-                      <li className="points" key={playerScore.name}>
-                        {playerScore.earning}
-                      </li>
-                    ) : null
-                )
-              }
-            </div>
-        )
-      }
-    </div>
-  return (
-    <div className="table">
-      {playersColumn}
-      {dealsColumns}
-    </div>
-  )
-}
+import constants from './constants';
+import { AddNameForm } from './components/AddNameForm';
+import { Table } from './components/Table';
+import { AppSubComp } from './App.subcomonents';
 
 const getNumber = (typed) => typed ? parseInt(typed) : 0;
 
@@ -166,10 +84,10 @@ const App = () => {
       ));
   };
   return (
-    <React.Fragment>
+    <AppSubComp.AppContainer>
       <AddNameForm label="Name" onAddName={onAddName} />
       <Table scores={scores} onChangeScore={handleChangeScore} />
-    </React.Fragment>
+    </AppSubComp.AppContainer>
   );
 }
 
