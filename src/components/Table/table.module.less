@@ -1,0 +1,64 @@
+.table {
+    max-width: 600px;
+    display: flex;
+    flex-direction: row;
+  }
+  
+  .playerscolumn {
+    list-style-type: none;
+    width: 15%;
+    display: flex;
+    flex-direction: column;
+    padding-inline-start: 0px;
+  }
+  
+  .dealscontainer {
+    width: 70%;
+    display: flex;
+    flex-direction: row;
+  }
+  
+  .dealcolumn {
+    width: 14.29%;
+    display: flex;
+    list-style-type: none;
+    flex-direction: column;
+    .dealheader {
+      display: flex;
+    }
+    li {
+      display : flex;
+      input {
+        display: flex;
+        max-width: 75%;
+      }
+    }
+  }
+  
+  .truncated {
+    display: inline;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; 
+  }
+  
+  .nameheader {
+    .truncated();  
+  }
+  
+  .playername {
+    .truncated();
+  }
+  
+  .dealheader {
+    .truncated();
+  }
+
+  .resultcolumn {
+    width: 7.5%;
+    display: flex;
+    flex-direction: column;
+    .dealheader {
+      display: flex;
+    }
+  }

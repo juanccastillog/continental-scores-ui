@@ -44,7 +44,7 @@ const useTypeScript = fs.existsSync(paths.appTsConfig);
 
 // style files regexes
 const cssRegex = /\.(?:le|c)ss$/;
-const cssModuleRegex = /\.module\.css$/;
+const cssModuleRegex = /\.module\.(?:le|c)ss$/;
 const sassRegex = /\.(scss|sass)$/;
 const sassModuleRegex = /\.module\.(scss|sass)$/;
 
