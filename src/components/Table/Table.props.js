@@ -1,30 +1,39 @@
-import constants from '../../constants';
-
 const getNumber = (typed) => typed ? parseInt(typed, 10) : 0;
 
-const getPlayersAndDeals = (scores) => {
-  const deals = scores[0] && scores[0].deals && scores[0].deals.map(
-    (row0colj, j) => scores.map(row => ({ name: row.name, value: row.deals[j] }))
+const getPlayersDealsAndResults = (scores, winnerNames,
+  {
+    dealEarnings,
+    BestScoreEarning,
+  }
+) => {
+
+  const scoreSums = scores.map(score => {
+    return {
+      name: score.name,
+      scoreSum: score.deals.reduce((sum, currentDeal) => sum + (currentDeal.isSet ? currentDeal.score : 0), 0),
+    }
+  });
+  const totalScoreWinner = scoreSums.length > 0 && scoreSums.reduce((currentWinner, currentResult) =>
+    currentResult.scoreSum < currentWinner.scoreSum ? currentResult : currentWinner);
+
+  const earningSums = scores.map(score => {
+    return {
+      name: score.name,
+      earningSum: winnerNames.reduce((sum, currentWinnerName, currentIndex) =>
+        currentWinnerName !== null ?
+        (sum + ((currentWinnerName === score.name) ? dealEarnings[currentIndex] * (scores.length - 1) : - dealEarnings[currentIndex]))
+        : sum, 0) +
+        ((score.name === totalScoreWinner.name) ? BestScoreEarning * (scores.length - 1) : -BestScoreEarning)
+    }
+  });
+
+  const deals = scores[0]?.deals?.map(
+    (row0colj, j) => scores.map(score => ({ name: score.name, value: score.deals[j].isSet ? score.deals[j].score : '' }))
   );
   const players = scores.map(score => score.name);
-  return { players, deals };
+  return { players, deals, scoreSums, earningSums };
 }
 
-const getDealWinnerName = (deal) =>
-  deal.reduce((acc, playerScore) => playerScore && acc && playerScore.value <= acc.value ? playerScore.name : acc && acc.name, null);
-
-const getResults = (scores, deals) => (
-  [] && scores.map(score => (
-    {
-      name: score.name,
-      total: score.deals.reduce((acc, deal) => acc + deal),
-      earning: score.deals.reduce((acc, deal, index) =>
-        getDealWinnerName(deals[index]) === score.name ?
-          acc + (constants.dealsEarnings[index] * (scores.length - 1)) :
-          acc - constants.dealsEarnings[index], 0
-      ),
-    }))
-);
 
 const getModifiedScores = ({ dealIndex, name, value }, scores) =>
   scores.map(
@@ -33,18 +42,30 @@ const getModifiedScores = ({ dealIndex, name, value }, scores) =>
         {
           ...score,
           deals: score.deals.map(
-            (deal, j) => (j === dealIndex) ? getNumber(value) : deal
+            (deal, j) => (j === dealIndex) ? { isSet: value !== '', score: getNumber(value) } : deal
           ),
         } : score
   );
 
-export const getTableProps = ({ scores, setScores }) => {
+export const getTableProps = ({
+  scoresSetup: {
+    scores,
+    setScores,
+  },
+  winnersSetup: {
+    winners,
+    setWinners,
+  },
+  earningsSetup
+}) => {
   const handleChangeScore = (change) => {
-    setScores(getModifiedScores(change, scores));
-    console.log('change', change);
-    console.log('modified', getModifiedScores(change, scores));
+    const newScores = getModifiedScores(change, scores);
+    setScores(newScores);
+    if (change.value === '0') {// TODO for now assuming change.name is the winner of the change.dealIndex round
+      handleChangeWinner(change.name, change.dealIndex);
+    }
   };
-  const { players, deals } = getPlayersAndDeals(scores);
-  const results = getResults(scores, deals);
-  return { players, deals, results, handleChangeScore };
+  const handleChangeWinner = (newWinner, roundIndex) => setWinners(winners.map((winner, i) => i === roundIndex ? newWinner : winner));
+  const { players, deals, scoreSums, earningSums } = getPlayersDealsAndResults(scores, winners, earningsSetup);
+  return { players, deals, scoreSums, earningSums, handleChangeScore, handleChangeWinner };
 }

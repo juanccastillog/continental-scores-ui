@@ -28,7 +28,7 @@ export const DealsColumns = ({ deals, onChangeScore }) =>
                 deals[j].map(
                   (playerDeal) =>
                     <li key={playerDeal.name}>
-                      <input type="number" value={playerDeal.value === 0 ? '' : playerDeal.value} onChange={e => onChangeScore({ dealIndex: j, name: playerDeal.name, value: e.target.value })} />
+                      <input type="number" value={playerDeal.value} onChange={e => onChangeScore({ dealIndex: j, name: playerDeal.name, value: e.target.value })} />
                     </li>
                 )) || null
             }
@@ -37,24 +37,24 @@ export const DealsColumns = ({ deals, onChangeScore }) =>
     }
   </div>
 
-export const TotalsColumn = ({ totals }) =>
+export const ScoreSumsColumn = ({ totals }) =>
   <div className={styles.resultcolumn}>
     <div className={styles.dealheader}>{constants.resultsHeaders[0]}</div>
     {
       totals.map(total =>
         <div key={total.name}>
-          {total.value}
+          {total.scoreSum}
         </div>)
     }
   </div>
 
-export const EarningsColumn = ({ earnings }) =>
+export const EarningSumsColumn = ({ earnings }) =>
   <div className={styles.resultcolumn}>
     <div className={styles.dealheader}>{constants.resultsHeaders[1]}</div>
     {
       earnings.map(earning =>
         <div key={earning.name}>
-          {earning.value}
+          {earning.earningSum}
         </div>)
     }
   </div>
